@@ -1,4 +1,4 @@
-Converts Google Takeout location data to GEOJson format. Generates a file with place visit points and another with trip routes.
+Converts Google Takeout location data to GeoJSON format. Generates a file with place visit points and another with trip routes.
 
 # Installation
 1. Clone the repository and place takeout data in the same directory as the scripts with the directory name 'Takeout'
