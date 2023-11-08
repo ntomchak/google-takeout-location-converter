@@ -1,4 +1,3 @@
-# arguments: time threshold for same activity, 10 min default; start date, end date, records.json location
 import os, json, utilities
 from datetime import datetime
 
