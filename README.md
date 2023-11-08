@@ -1,6 +1,6 @@
 Converts Google Takeout location data to GeoJSON format. Generates a file with place visit points and another with trip routes.
 
-# Installation
+# Setup
 1. Clone the repository and place takeout data in the same directory as the scripts with the directory name 'Takeout'
 2. Install the latest version of python https://www.python.org/downloads/
 3. Install pip https://pip.pypa.io/en/stable/installation/
