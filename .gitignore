@@ -1,2 +1,7 @@
 __pycache__/
 Takeout/
+activity_segments.json
+place_visits.json
+place_visits_children.json
+place_visits_children_other_candidate_locations.json
+place_visits_other_candidate_locations.json

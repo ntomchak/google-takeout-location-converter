@@ -2,45 +2,41 @@ import json
 from geojson import Feature, FeatureCollection, LineString, Point
 
 class Geojson:
-    def __init__(self):
-        self.segment_id = 0
-        self.points = []
-        self.activities = []
-        self.current_line_feature = None
-    
-    def place(self, segment_id, timeline_obj):
-        if self.segment_id == segment_id:
-            return None
-        else:
-            self.segment_id = segment_id
-            coordinates = (timeline_obj.lon, timeline_obj.lat)
-            point = Point(coordinates)
-            properties = {
-                "place_id": timeline_obj.place_id, 
-                "address": timeline_obj.address, 
-                "name": timeline_obj.name, 
-                "start_time": timeline_obj.start_time.strftime('%Y-%m-%d %H:%M:%S'), 
-                "end_time": timeline_obj.end_time.strftime('%Y-%m-%d %H:%M:%S')
-            }
-            feature = Feature(geometry=point, properties=properties)
-            self.points.append(feature)
+    def __init__(self, data):
+        with open('place_visits.json', 'w') as f:
+            features = list(map(lambda place_data: self._point_to_feature(*place_data), data.place_visits))
+            json.dump(FeatureCollection(features), f, indent=2)
+        
+        with open('place_visits_children.json', 'w') as f:
+            features = list(map(lambda place_data: self._point_to_feature(*place_data), data.place_visits_children))
+            json.dump(FeatureCollection(features), f, indent=2)
             
-    def activity(self, segment_id, timeline_obj, record_obj):
-        if self.segment_id == segment_id:
-            self.current_line_feature['geometry']['coordinates'].append((record_obj.lon, record_obj.lat))
-        else:
-            self.segment_id = segment_id
-            coordinates = [(record_obj.lon, record_obj.lat)]
-            line = LineString(coordinates)
-            properties = {"start_time": timeline_obj.start_time.strftime('%Y-%m-%d %H:%M:%S'), 
-                "end_time": timeline_obj.end_time.strftime('%Y-%m-%d %H:%M:%S'), 
-                "activity_type": timeline_obj.activity_type}
-            feature = Feature(geometry=line, properties=properties)
-            self.current_line_feature = feature
-            self.activities.append(feature)
+        with open('place_visits_other_candidate_locations.json', 'w') as f:
+            features = list(map(lambda place_data: self._point_to_feature(*place_data), data.place_visits_other_candidate_locations))
+            json.dump(FeatureCollection(features), f, indent=2)
+            
+        with open('place_visits_children_other_candidate_locations.json', 'w') as f:
+            features = list(map(lambda place_data: self._point_to_feature(*place_data), data.place_visits_children_other_candidate_locations))
+            json.dump(FeatureCollection(features), f, indent=2)
+            
+        with open('activity_segments.json', 'w') as f:
+            activity_features = list(map(lambda activity_data: self._activity_to_feature(*activity_data), data.activities))
+            json.dump(FeatureCollection(activity_features), f, indent=2)
+        
+    @staticmethod
+    def _times_to_string(properties):
+        if "duration_startTimestamp" and "duration_endTimestamp" in properties:
+            properties["duration_endTimestamp"] = properties["duration_endTimestamp"].strftime('%Y-%m-%d %H:%M:%S')
+            properties["duration_startTimestamp"] = properties["duration_startTimestamp"].strftime('%Y-%m-%d %H:%M:%S')
     
-    def write(self):
-        with open('places.json', 'w') as f:
-            json.dump(FeatureCollection(self.points), f, indent=2)
-        with open('activities.json', 'w') as f:
-            json.dump(FeatureCollection(self.activities), f, indent=2)
+    @staticmethod
+    def _point_to_feature(coords, properties):
+        Geojson._times_to_string(properties)
+        geojson_point = Point(coords)
+        return Feature(geometry=geojson_point, properties=properties)
+       
+    @staticmethod
+    def _activity_to_feature(coords, properties):
+        Geojson._times_to_string(properties)
+        line_string = LineString(coords)
+        return Feature(geometry=line_string, properties=properties)

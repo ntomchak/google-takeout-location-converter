@@ -8,7 +8,7 @@ class Record:
         self.time = utilities.timestamp_to_datetime(raw_obj["timestamp"])
         self.valid = False if self.lat is None or self.lon is None else True
 
-class Records:
+class RecordsIterator:
     def __init__(self, path):
         json_obj = utilities.json_from_path(path)
         self.iterator = iter(json_obj["locations"])
