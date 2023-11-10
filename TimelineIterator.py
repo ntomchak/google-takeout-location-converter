@@ -13,8 +13,8 @@ class TimelineObject:
 class Location:
     def __init__(self, location_obj):
         self.properties = {}
-        self.properties["location_lon"] = location_obj["latitudeE7"] / 10**7
-        self.properties["location_lat"] = location_obj["longitudeE7"] / 10**7
+        self.properties["location_lon"] = location_obj["longitudeE7"] / 10**7
+        self.properties["location_lat"] = location_obj["latitudeE7"] / 10**7
         self.properties["location_placeId"] = location_obj["placeId"]
         self.properties["location_address"] = location_obj["address"] if 'address' in location_obj else None
         self.properties["location_name"] = location_obj["name"] if "name" in location_obj else None
