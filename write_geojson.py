@@ -1,4 +1,4 @@
-import json, os, threading
+import json, os
 from geojson import Feature, FeatureCollection, LineString, Point
 
 def _times_to_string(properties, *args):

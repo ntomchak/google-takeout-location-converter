@@ -1,5 +1,3 @@
-import threading
-
 def _append_point_table(pl_id, fk, table, point, lon, lat):
     coords = (lon, lat)
     point.properties = {"id": pl_id, "fk": fk} | point.properties
@@ -82,7 +80,7 @@ def activities(activities):
         
         if activity[0].transit_path is not None:
             path = activity[0].transit_path
-            path.properties = {"id": activity_segment_id, "fk": activity_segment_id} | path.properties
+            path.properties = {"id": transit_path_id, "fk": activity_segment_id} | path.properties
             transit_path_coords = list(map(lambda stop: (stop.lon, stop.lat), path.stops))
             transit_paths.append((transit_path_coords, path.properties))
             for stop in path.stops:
