@@ -62,13 +62,50 @@ class ActivitySegment(TimelineObject):
         self.properties["distance"] = raw_obj["distance"] if "distance" in raw_obj else None
         self.properties["most_probable_activity"] = raw_obj["activities"][0]["activityType"]
         self.properties["most_probable_activity_probability"] = raw_obj["activities"][0]["probability"]
-        for activity in raw_obj["activities"]:
-            self.properties["activities_" + activity["activityType"]] = activity["probability"]
         if "waypointPath" in raw_obj:
             self.properties["waypointPath_source"] = raw_obj["waypointPath"]["source"]
             self.properties["waypointPath_distanceMeters"] = raw_obj["waypointPath"]["distanceMeters"] if "distanceMeters" in raw_obj["waypointPath"] else None
             self.properties["waypointPath_travelMode"] = raw_obj["waypointPath"]["travelMode"] if "travelMode" in raw_obj["waypointPath"] else None
             self.properties["waypointPath_confidence"] = raw_obj["waypointPath"]["confidence"] if "confidence" in raw_obj["waypointPath"] else None
+        
+        self.transit_path = TransitPath(raw_obj["transitPath"]) if "transitPath" in raw_obj else None
+
+class TransitStop:
+    def __init__(self, transit_stop_obj, stop_time_obj):
+        self.properties = {}
+        self.lat = transit_stop_obj["latitudeE7"] / 10**7
+        self.lon = transit_stop_obj["longitudeE7"] / 10**7
+        self.properties["transitStop_placeId"] = transit_stop_obj["placeId"]
+        self.properties["transitStop_address"] = transit_stop_obj["address"] if 'address' in transit_stop_obj else None
+        self.properties["transitStop_name"] = transit_stop_obj["name"] if "name" in transit_stop_obj else None
+        
+        if stop_time_obj is not None:
+            self.properties["stopTime_scheduledDepartureTimestamp"] = utilities.timestamp_to_datetime(stop_time_obj["scheduledDepartureTimestamp"]) if "scheduledDepartureTimestamp" in stop_time_obj else None
+            self.properties["stopTime_scheduleArrivalTimestamp"] = utilities.timestamp_to_datetime(stop_time_obj["scheduleArrivalTimestamp"]) if "scheduleArrivalTimestamp" in stop_time_obj else None
+            self.properties["stopTime_realtimeArrivalTimestamp"] = utilities.timestamp_to_datetime(stop_time_obj["realtimeArrivalTimestamp"]) if "realtimeArrivalTimestamp" in stop_time_obj else None
+            self.properties["stopTime_realtimeDepartureTimestamp"] = utilities.timestamp_to_datetime(stop_time_obj["realtimeDepartureTimestamp"]) if "realtimeDepartureTimestamp" in stop_time_obj else None
+        else:
+            self.properties["stopTime_scheduledDepartureTimestamp"] = None
+            self.properties["stopTime_scheduleArrivalTimestamp"] = None
+            self.properties["stopTime_realtimeArrivalTimestamp"] = None
+            self.properties["stopTime_realtimeDepartureTimestamp"] = None
+
+class TransitPath:
+    def __init__(self, transit_path_obj):
+        self.properties = {}
+        self.properties["name"] = transit_path_obj["name"]
+        self.properties["linePlaceId"] = transit_path_obj["linePlaceId"] if "linePlaceId" in transit_path_obj else None
+        self.properties["source"] = transit_path_obj["source"]
+        self.properties["confidence"] = transit_path_obj["confidence"] if "confidence" in transit_path_obj else None
+        self.properties["distanceMeters"] = transit_path_obj["distanceMeters"] if "distanceMeters" in transit_path_obj else None
+        
+        if ("stopTimesInfo" in transit_path_obj) and (len(transit_path_obj["stopTimesInfo"]) == len(transit_path_obj["transitStops"])):
+            zipped_stops_with_times = zip(transit_path_obj["transitStops"], transit_path_obj["stopTimesInfo"])
+            self.stops = list(map(lambda tup: TransitStop(tup[0], tup[1]), zipped_stops_with_times))
+            self.properties["has_stop_times"] = 1
+        else:
+            self.stops = list(map(lambda stop: TransitStop(stop, None), transit_path_obj["transitStops"]))
+            self.properties["has_stop_times"] = 0
 
 class TimelineIterator:
     def __init__(self, start_date, end_date, path):
